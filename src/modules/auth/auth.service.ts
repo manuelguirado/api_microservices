@@ -3,17 +3,19 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 interface UserProfile {
   id: string;
   email: string;
+  password: string;
 }
 
-interface User {
-  id: string;
-  email: string;
-}
-
-@Injectable() 
+@Injectable()
 export class AuthService {
-    async validateOAuthUser(profile: UserProfile): Promise<User> { 
-        // Implement your user validation logic here
-        return { id: profile.id, email: profile.email };
+  constructor(private userProfile: UserProfile) {}
+
+  async signIn(email: string, pass: string): Promise<any> {
+    const user = await this.userProfile.findOne({ email });
+    if (user?.password !== pass) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const { password, ...userData } = user;
+    return userData;
   }
 }
