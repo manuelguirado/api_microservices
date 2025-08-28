@@ -1,21 +1,28 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  password: string;
-}
-
+import { UserService } from './user.service';
+import { comparePasswords } from './utils/hashpassword';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
-  constructor(private userProfile: UserProfile) {}
+  constructor(
+    private userService: UserService,
+    private jwtService: JwtService,
+  ) {}
 
-  async signIn(email: string, pass: string): Promise<any> {
-    const user = await this.userProfile.findOne({ email });
-    if (user?.password !== pass) {
+  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.userService.findOne(email);
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const { password, ...userData } = user;
-    return userData;
+
+    const validatePassword = await comparePasswords(pass, user.password);
+    if (!validatePassword) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Using destructuring to remove password from returned object
+
+    const payload = { sub: user.userId, username: user.name };
+    return { access_token: await this.jwtService.signAsync(payload) };
   }
 }
