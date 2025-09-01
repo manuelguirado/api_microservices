@@ -1,21 +1,25 @@
 import { Injectable } from '@nestjs/common';
 
-export interface User {
-  userId: number;
-  name: string;
-  password: string;
-}
+export type User = any;
 @Injectable()
 export class UserService {
-  private readonly users: User[] = [
+  private readonly users = [
     {
       userId: 1,
-      name: 'john',
+      username: 'john',
       password: 'changeme',
+    },
+    {
+      userId: 2,
+      username: 'maria',
+      password: 'guess',
     },
   ];
 
-  findOne(userName: string): Promise<User | undefined> {
-    return Promise.resolve(this.users.find((user) => user.name === userName));
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  findOne(username: string): Promise<User | undefined> {
+    return Promise.resolve(
+      this.users.find((user) => user.username === username),
+    );
   }
 }

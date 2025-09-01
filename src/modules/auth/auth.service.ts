@@ -11,6 +11,7 @@ export class AuthService {
 
   async signIn(email: string, pass: string): Promise<{ access_token: string }> {
     const user = await this.userService.findOne(email);
+    console.log(user);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -19,8 +20,6 @@ export class AuthService {
     if (!validatePassword) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Using destructuring to remove password from returned object
 
     const payload = { sub: user.userId, username: user.name };
     return { access_token: await this.jwtService.signAsync(payload) };
